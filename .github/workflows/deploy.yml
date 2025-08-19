@@ -5,7 +5,7 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'   # matches 1.0.0, 2.3.5 etc.
     branches-ignore:
-      - 'SNAPSHOT-*'
+      - '*-SNAPSHOT'
 
 jobs:
   build:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for version bump commit later
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -24,8 +26,29 @@ jobs:
           server-username: GITHUB_ACTOR
           server-password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 🔹 Step 1: Strip -SNAPSHOT and set version to tag
+      - name: Prepare release version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "Releasing version $TAG_VERSION"
+          mvn versions:set -DnewVersion=$TAG_VERSION -B -q
+
+      # 🔹 Step 2: Build
       - name: Build with Maven
         run: mvn -B clean install
 
+      # 🔹 Step 3: Deploy release artifact
       - name: Deploy to GitHub Packages
         run: mvn -B deploy
+
+      # 🔹 Step 4: Bump to next snapshot version after release
+      - name: Bump to next snapshot
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          NEXT_VERSION=$(echo $TAG_VERSION | awk -F. '{print $1"."$2"."$3+1"-SNAPSHOT"}')
+          echo "Bumping to next snapshot version $NEXT_VERSION"
+          mvn versions:set -DnewVersion=$NEXT_VERSION -B -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Bump version to $NEXT_VERSION"
+          git push origin HEAD:main
