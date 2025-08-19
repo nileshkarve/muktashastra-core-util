@@ -73,11 +73,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "Bump version to $NEXT_VERSION"
 
-          # Push only if main branch exists
-          git fetch origin main || true
-          if git show-ref --verify --quiet refs/remotes/origin/main; then
-            echo "Pushing bump commit to main"
-            git push origin HEAD:refs/heads/main
+          # Push only if master branch exists
+          git fetch origin master || true
+          if git show-ref --verify --quiet refs/remotes/origin/master; then
+            echo "Pushing bump commit to master"
+            git push origin HEAD:refs/heads/master
           else
-            echo "Main branch not found, skipping bump push."
+            echo "master branch not found, skipping bump push."
           fi
