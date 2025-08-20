@@ -22,11 +22,11 @@ jobs:
         with:
           fetch-depth: 0 # needed for version bump commit later
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
           server-id: github # matches <id> in settings.xml
           server-username: GITHUB_ACTOR
           server-password: ${{ secrets.GITHUB_TOKEN }}
