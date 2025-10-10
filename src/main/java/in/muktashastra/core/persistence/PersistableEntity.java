@@ -1,21 +1,28 @@
-package in.muktashastra.core.util;
+package in.muktashastra.core.persistence;
 
 import java.io.Serializable;
 
 /**
- * Base interface for all persistent entities in the system.
+ * Base interface for all persistable entities in the system.
  * Provides common functionality for entity identification.
  * 
  * @author Nilesh
  */
-public interface PersistentEntity extends Serializable {
+public interface PersistableEntity extends Serializable {
     
     /**
      * Sets the unique identifier for this entity.
      * 
      * @param id the unique identifier
      */
-    void setId(String id);
+    void setId(EntityId id);
+    
+    /**
+     * Sets the status for this entity.
+     * 
+     * @param status the status
+     */
+    void setStatus(Status status);
     
     /**
      * Gets the entity name, defaults to simple class name.

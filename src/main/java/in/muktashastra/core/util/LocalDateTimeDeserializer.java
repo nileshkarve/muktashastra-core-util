@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MuktashastraConstant.LOCAL_DATE_TIME_FORMAT);
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(CoreConstant.LOCAL_DATE_TIME_FORMAT);
 
     /**
      * Deserializes JSON string to LocalDateTime.

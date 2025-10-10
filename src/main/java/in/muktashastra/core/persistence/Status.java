@@ -1,11 +1,11 @@
-package in.muktashastra.core.util;
+package in.muktashastra.core.persistence;
 
 /**
  * Enumeration representing the various states of an entity lifecycle.
  * 
  * @author Nilesh
  */
-public enum ENTITY_STATUS {
+public enum Status {
     /** Entity is newly created */
     NEW,
     

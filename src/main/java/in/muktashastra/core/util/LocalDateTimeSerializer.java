@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MuktashastraConstant.LOCAL_DATE_TIME_FORMAT);
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(CoreConstant.LOCAL_DATE_TIME_FORMAT);
 
     /**
      * Serializes LocalDateTime to JSON string.

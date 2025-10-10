@@ -6,12 +6,12 @@ package in.muktashastra.core.util;
  * 
  * @author Nilesh
  */
-public class MuktashastraErrorMessageConstant {
+public class CoreErrorMessageConstant {
 
     /**
      * Private constructor to prevent instantiation of utility class.
      */
-    private MuktashastraErrorMessageConstant(){}
+    private CoreErrorMessageConstant(){}
 
     /** Error message for user not found scenario. Expects username parameter. */
     private static final String USER_NOT_FOUND = "User with username %s not found";

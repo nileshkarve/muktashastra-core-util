@@ -5,18 +5,18 @@ package in.muktashastra.core.util;
  * 
  * @author Nilesh
  */
-public class MuktashastraConstant {
+public class CoreConstant {
 
     /**
      * Private constructor to prevent instantiation.
      */
-    private MuktashastraConstant() {}
+    private CoreConstant() {}
 
     /** String representation for boolean true */
-    public static final String STRING_FLAG_TRUE = "Y";
+    public static final String STRING_FLAG_TRUE = "true";
     
     /** String representation for boolean false */
-    public static final String STRING_FLAG_FALSE = "N";
+    public static final String STRING_FLAG_FALSE = "false";
 
     /** ISO LocalDateTime format pattern */
     public static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";

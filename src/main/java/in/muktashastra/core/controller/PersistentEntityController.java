@@ -1,8 +1,8 @@
 package in.muktashastra.core.controller;
 
-import in.muktashastra.core.util.Filter;
+import in.muktashastra.core.persistence.PersistableEntity;
+import in.muktashastra.core.util.filter.Filter;
 import in.muktashastra.core.util.PagedResponse;
-import in.muktashastra.core.util.PersistentEntity;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * @param <T> the type of persistent entity
  * @author Nilesh
  */
-public interface PersistentEntityController<T extends PersistentEntity> {
+public interface PersistentEntityController<T extends PersistableEntity> {
 
     /**
      * Retrieves an entity by its ID.
