@@ -19,6 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,6 @@ public class PersistableEntityRepoImpl<T extends PersistableEntity> implements P
         List<Object> paginatedParams = new ArrayList<>(preparedStatementParameterValues);
         paginatedParams.add(filter.getSize());
         paginatedParams.add(filter.getPage() * filter.getSize());
-        
         List<T> objects = applicationJdbcTemplate.query(paginatedSql, new EntityRowMapper<>(metaData), paginatedParams.toArray());
         return new PagedResponse<>(objects, filter.getPage(), filter.getSize(), totalElements);
     }
