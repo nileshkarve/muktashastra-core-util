@@ -42,7 +42,7 @@ public class RelationalDatabaseEntityMetadataCache {
 
     private static String extractTableName(Class<?> clazz) {
         if (!clazz.isAnnotationPresent(RelationalDatabaseEntity.class)) {
-            throw new IllegalArgumentException("Class not annotated with @DbEntity: " + clazz.getName());
+            throw new IllegalArgumentException("Class not annotated with @RelationalDatabaseEntity: " + clazz.getName());
         }
         RelationalDatabaseEntity entity = clazz.getAnnotation(RelationalDatabaseEntity.class);
         return entity.tableName();

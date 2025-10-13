@@ -8,6 +8,7 @@ import in.muktashastra.core.persistence.util.EntityMetadata;
 import in.muktashastra.core.persistence.util.RelationalDatabaseEntityMetadataCache;
 import in.muktashastra.core.util.CoreUtil;
 import in.muktashastra.core.util.PagedResponse;
+import in.muktashastra.core.util.filter.ComparisonOperator;
 import in.muktashastra.core.util.filter.Filter;
 import in.muktashastra.core.util.filter.FilterTuple;
 import lombok.NonNull;
@@ -19,7 +20,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +61,7 @@ public class PersistableEntityRepoImpl<T extends PersistableEntity> implements P
         String selectSql = metaData.getSelectQueryMetadata().getQuery();
         List<Object> preparedStatementParameterValues = new ArrayList<>();
         String whereClause = buildWhereClauseAndPopulatePreparedStatementParamValues(preparedStatementParameterValues, filter, metaData);
+
         // Get total count
         String countSql = "SELECT COUNT(*) FROM " + metaData.getTableName() + whereClause;
         Long totalElements = applicationJdbcTemplate.queryForObject(countSql, Long.class, preparedStatementParameterValues.toArray());
@@ -116,9 +117,9 @@ public class PersistableEntityRepoImpl<T extends PersistableEntity> implements P
             List<FilterTuple> filterTuples = filteredFieldTupleMap.get(fieldMetadata.field().getName());
             List<String> filterClausesForField = new ArrayList<>();
             for(FilterTuple filterTuple : filterTuples) {
-                String filterClause = nonIndexedColumn.concat(" ").concat(filterTuple.getComparisonOperator().getOperator()).concat(" ?");
-                filterClausesForField.add(filterClause);
-                preparedStatementParameterValues.add(filterTuple.getValue());
+                ComparisonOperator.PreparedStatementClause statementClause = filterTuple.getComparisonOperator().generatePreparedStatementClause(nonIndexedColumn, filterTuple.getFilterValues());
+                filterClausesForField.add(statementClause.getPreparedStatementSql());
+                preparedStatementParameterValues.addAll(statementClause.getValues());
             }
             filterClauses.add(String.join(" AND ", filterClausesForField));
         }
@@ -132,9 +133,9 @@ public class PersistableEntityRepoImpl<T extends PersistableEntity> implements P
             List<FilterTuple> filterTuples = filteredFieldTupleMap.get(fieldMetadata.field().getName());
             List<String> filterClausesForField = new ArrayList<>();
             for(FilterTuple filterTuple : filterTuples) {
-                String filterClause = indexedColumn.concat(" ").concat(filterTuple.getComparisonOperator().getOperator()).concat(" ?");
-                filterClausesForField.add(filterClause);
-                preparedStatementParameterValues.add(filterTuple.getValue());
+                ComparisonOperator.PreparedStatementClause statementClause = filterTuple.getComparisonOperator().generatePreparedStatementClause(indexedColumn, filterTuple.getFilterValues());
+                filterClausesForField.add(statementClause.getPreparedStatementSql());
+                preparedStatementParameterValues.addAll(statementClause.getValues());
             }
             filterClauses.add(String.join(" AND ", filterClausesForField));
         }
@@ -144,15 +145,17 @@ public class PersistableEntityRepoImpl<T extends PersistableEntity> implements P
         return filter.getFilterTuples().stream().collect(Collectors.groupingBy(FilterTuple::getFieldName));
     }
 
-    private void populatePrimaryKeyFilter(List<String> filterClauses, List<Object> filterValuesForPreparedStatements, Filter filter, EntityMetadata metaData) throws CoreException {
+    private void populatePrimaryKeyFilter(List<String> filterClauses, List<Object> preparedStatementParameterValues, Filter filter, EntityMetadata metaData) throws CoreException {
         String primaryKeyFieldName = metaData.getPrimaryKeyFieldName();
         List<FilterTuple> primaryColumnFilters = filter.getFilterTuples().stream().filter(filterTuple -> filterTuple.getFieldName().equals(primaryKeyFieldName)).toList();
         if(!primaryColumnFilters.isEmpty()) {
             List<String> filterClausesForField = new ArrayList<>();
             primaryColumnFilters.forEach(filterTuple -> {
-                String filterClause = metaData.getPrimaryKeyColumn().concat(" ").concat(filterTuple.getComparisonOperator().getOperator()).concat(" ?");
-                filterClausesForField.add(filterClause);
-                filterValuesForPreparedStatements.add(filterTuple.getValue());
+                List<Object> idValues = filterTuple.getFilterValues().stream().map(value -> EntityId.fromString(value.toString())).map(EntityId::toBytes).collect(Collectors.toList());
+                ComparisonOperator.PreparedStatementClause statementClause = filterTuple.getComparisonOperator().generatePreparedStatementClause(metaData.getPrimaryKeyColumn(), idValues);
+                filterClausesForField.add(statementClause.getPreparedStatementSql());
+                preparedStatementParameterValues.addAll(statementClause.getValues());
+
             });
             filterClauses.add(String.join(" AND ", filterClausesForField));
         }
@@ -203,14 +206,6 @@ public class PersistableEntityRepoImpl<T extends PersistableEntity> implements P
         if (entities.isEmpty()) {
             throw new CoreException("Entity list to be saved cannot be empty");
         }
-        return getEntityMetadata(entities.getFirst().getEntityName());
-    }
-
-    private static EntityMetadata getEntityMetadata(String entityName) throws CoreException {
-        EntityMetadata metaData = RelationalDatabaseEntityMetadataCache.getEntityMetaData(entityName);
-        if (metaData == null) {
-            throw new CoreException("Entity metadata not found for entity: " + entityName);
-        }
-        return metaData;
+        return RelationalDatabaseEntityMetadataCache.getEntityMetaData(entities.getFirst().getEntityName());
     }
 }
