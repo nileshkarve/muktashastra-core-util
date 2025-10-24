@@ -1,4 +1,4 @@
-package in.muktashastra.core.util;
+package in.muktashastra.core.util.constant;
 
 /**
  * Constants class containing standardized error message templates for the Muktashastra application.

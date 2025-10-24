@@ -1,6 +1,5 @@
 package in.muktashastra.core.util.filter;
 
-import in.muktashastra.core.persistence.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,17 +17,14 @@ import java.util.List;
 @ToString
 public final class Filter implements Serializable {
 
+    /** Entity on which filter is to be applied */
+    private String entityName;
+
     /** Page number for pagination (0-based) */
     private Integer page;
 
     /** Number of items per page */
     private Integer size;
-
-    /** Entity status filter */
-    private Status status;
-
-    /** Entity on which filter is to be applied */
-    private String entityName;
 
     @Singular
     private List<FilterTuple> filterTuples;

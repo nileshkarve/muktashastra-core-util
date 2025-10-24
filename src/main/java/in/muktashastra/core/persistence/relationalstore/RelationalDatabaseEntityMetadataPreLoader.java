@@ -1,8 +1,8 @@
-package in.muktashastra.core.persistence.util;
+package in.muktashastra.core.persistence.relationalstore;
 
 import in.muktashastra.core.exception.CoreException;
 import in.muktashastra.core.exception.CoreRuntimeException;
-import in.muktashastra.core.persistence.PersistableEntity;
+import in.muktashastra.core.persistence.model.PersistableEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.SmartInitializingSingleton;

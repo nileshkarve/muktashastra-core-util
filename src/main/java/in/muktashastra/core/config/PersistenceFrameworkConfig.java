@@ -1,9 +1,6 @@
 package in.muktashastra.core.config;
 
-import in.muktashastra.core.persistence.PersistableEntity;
-import in.muktashastra.core.persistence.repo.PersistableEntityRepoImpl;
-import in.muktashastra.core.persistence.util.RelationalDatabaseEntityMetadataPreLoader;
-import in.muktashastra.core.util.CoreUtil;
+import in.muktashastra.core.persistence.relationalstore.RelationalDatabaseEntityMetadataPreLoader;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,11 +33,6 @@ public class PersistenceFrameworkConfig {
     @ConditionalOnMissingBean
     public JdbcTemplate applicationJdbcTemplate(DataSource applicationDataSource) {
         return new JdbcTemplate(applicationDataSource);
-    }
-
-    @Bean
-    public PersistableEntityRepoImpl<PersistableEntity> frameworkPersistableEntityRepoImpl(PersistenceFrameworkProperties properties, JdbcTemplate jdbcTemplate, CoreUtil coreUtil) {
-        return new PersistableEntityRepoImpl<>(jdbcTemplate, coreUtil, properties.getMaximumParametersPerBatchQuery());
     }
 
     @Bean

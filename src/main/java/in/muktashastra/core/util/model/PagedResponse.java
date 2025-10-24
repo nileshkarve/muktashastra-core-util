@@ -1,9 +1,11 @@
-package in.muktashastra.core.util;
+package in.muktashastra.core.util.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,7 +17,8 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class PagedResponse<T> {
+@NoArgsConstructor
+public class PagedResponse<T> implements Serializable {
     /** List of content items for current page */
     private List<T> content;
     

@@ -1,4 +1,4 @@
-package in.muktashastra.core.persistence.annotation;
+package in.muktashastra.core.persistence.relationalstore.annotation;
 
 import in.muktashastra.core.persistence.util.JavaConversionType;
 

@@ -1,4 +1,4 @@
-package in.muktashastra.core.persistence;
+package in.muktashastra.core.persistence.model;
 
 /**
  * Enumeration representing the various states of an entity lifecycle.

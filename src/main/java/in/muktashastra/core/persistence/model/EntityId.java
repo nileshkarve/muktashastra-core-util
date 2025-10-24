@@ -1,4 +1,7 @@
-package in.muktashastra.core.persistence;
+package in.muktashastra.core.persistence.model;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -9,6 +12,16 @@ public final class EntityId implements Serializable {
 
     private final UUID id;
     private final int hash;
+
+    @JsonCreator
+    public static EntityId from(String id) {
+        return new EntityId(UUID.fromString(id));
+    }
+
+    @JsonValue
+    public String asString() {
+        return id.toString();
+    }
 
     private EntityId(UUID id) {
         this.id = id;
@@ -45,10 +58,6 @@ public final class EntityId implements Serializable {
     @Override
     public String toString() {
         return id.toString();
-    }
-
-    public UUID toUUID() {
-        return id;
     }
 
     @Override

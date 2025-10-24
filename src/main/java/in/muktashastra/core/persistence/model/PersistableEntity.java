@@ -1,4 +1,6 @@
-package in.muktashastra.core.persistence;
+package in.muktashastra.core.persistence.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
 
@@ -23,12 +25,13 @@ public interface PersistableEntity extends Serializable {
      * @param status the status
      */
     void setStatus(Status status);
-    
+
     /**
      * Gets the entity name, defaults to simple class name.
      * 
      * @return the entity name
      */
+    @JsonIgnore
     default String getEntityName() {
         return this.getClass().getSimpleName();
     }

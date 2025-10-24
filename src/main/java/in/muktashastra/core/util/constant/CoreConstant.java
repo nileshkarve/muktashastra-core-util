@@ -1,4 +1,4 @@
-package in.muktashastra.core.util;
+package in.muktashastra.core.util.constant;
 
 /**
  * Constants used throughout the Muktashastra application.
@@ -19,7 +19,7 @@ public class CoreConstant {
     public static final String STRING_FLAG_FALSE = "false";
 
     /** ISO LocalDateTime format pattern */
-    public static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    public static final String LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     
     /** Timestamp format for ID generation */
     public static final String TIMESTAMP_FORMAT = "yyyyMMddHHmmssSSS";

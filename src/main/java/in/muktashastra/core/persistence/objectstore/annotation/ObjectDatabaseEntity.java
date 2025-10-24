@@ -1,4 +1,4 @@
-package in.muktashastra.core.persistence.annotation;
+package in.muktashastra.core.persistence.objectstore.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RelationalDatabaseEntity {
-    String tableName();
+public @interface ObjectDatabaseEntity {
+    String objectName();
     boolean auditable() default true;
 }

@@ -1,39 +1,43 @@
 /**
  * 
  */
-package in.muktashastra.core.util;
+package in.muktashastra.core.util.serialization;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import in.muktashastra.core.util.constant.CoreConstant;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 
 /**
- * Jackson deserializer for LocalDateTime using Muktashastra date format.
+ * Jackson deserializer for Instant using Muktashastra date format.
  * 
  * @author Nilesh
  */
-public class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
+public class InstantDeserializer extends JsonDeserializer<Instant> {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(CoreConstant.LOCAL_DATE_TIME_FORMAT);
 
     /**
-     * Deserializes JSON string to LocalDateTime.
+     * Deserializes JSON string to Instant.
      * 
      * @param p the JSON parser
      * @param ctxt the deserialization context
-     * @return parsed LocalDateTime
+     * @return parsed Instant
      * @throws IOException if parsing fails
      * @throws JacksonException if JSON processing fails
      */
-	@Override
-	public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-		String dateStr = p.getText();
-		return LocalDateTime.parse(dateStr, formatter);
-	}
+    @Override
+    public Instant deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+        String dateStr = p.getText();
+        LocalDateTime localDateTime = LocalDateTime.parse(dateStr, formatter);
+        return localDateTime.toInstant(ZoneOffset.UTC);
+    }
 }

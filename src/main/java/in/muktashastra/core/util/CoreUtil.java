@@ -1,7 +1,11 @@
 package in.muktashastra.core.util;
 
+import in.muktashastra.core.util.constant.CoreConstant;
+
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +72,12 @@ public class CoreUtil {
     public LocalDate getLocalDateFromString(String dateStr) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(CoreConstant.LOCAL_DATE_FORMAT);
         return LocalDate.parse(dateStr, formatter);
+    }
+
+    public Instant getTimeStampFromString(String dateStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(CoreConstant.LOCAL_DATE_TIME_FORMAT);
+        LocalDateTime localDateTime = LocalDateTime.parse(dateStr, formatter);
+        return localDateTime.toInstant(ZoneOffset.UTC);
     }
 
     /**
