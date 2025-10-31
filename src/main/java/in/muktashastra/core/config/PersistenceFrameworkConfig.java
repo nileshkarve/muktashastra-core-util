@@ -1,5 +1,6 @@
 package in.muktashastra.core.config;
 
+import in.muktashastra.core.config.properties.PersistenceFrameworkProperties;
 import in.muktashastra.core.persistence.relationalstore.RelationalDatabaseEntityMetadataPreLoader;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,8 +17,7 @@ import javax.sql.DataSource;
 @ConditionalOnProperty(
         prefix = "application.persistence-framework",
         name = "enabled",
-        havingValue = "true",
-        matchIfMissing = false
+        havingValue = "true"
 )
 public class PersistenceFrameworkConfig {
 

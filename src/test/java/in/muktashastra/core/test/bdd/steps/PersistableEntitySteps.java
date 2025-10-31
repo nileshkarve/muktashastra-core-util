@@ -1,12 +1,13 @@
 package in.muktashastra.core.test.bdd.steps;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import in.muktashastra.core.entity.TestEntity;
-import in.muktashastra.core.exception.CoreException;
-import in.muktashastra.core.persistence.relationalstore.repo.CorePersistableEntityRepo;
-import in.muktashastra.core.util.model.PagedResponse;
 import in.muktashastra.core.util.filter.Filter;
 import in.muktashastra.core.util.filter.FilterTuple;
+import in.muktashastra.core.util.filter.PaginationFilter;
+import in.muktashastra.core.util.model.ErrorResponse;
+import in.muktashastra.core.util.model.PagedResponse;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -32,6 +33,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -42,12 +44,13 @@ public class PersistableEntitySteps {
     private final JdbcTemplate jdbcTemplate;
     private final TestRestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final CorePersistableEntityRepo<TestEntity> testEntityRepoImpl;
-    
+
     private int lastResponseCode;
     private TestEntity savedEntity;
     private List<TestEntity> savedEntities;
     private PagedResponse<TestEntity> pagedResponse;
+    private List<TestEntity> listResponse;
+    private String lastExceptionMessage;
 
     @Given("the H2 database is initialized")
     public void theH2DatabaseIsInitialized() {
@@ -55,20 +58,21 @@ public class PersistableEntitySteps {
     }
 
     @Given("the test entity table exists with data populated from schema.sql")
-    public void theTestEntityTableExists() throws CoreException {
+    public void theTestEntityTableExists() {
         Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TEST_ENTITY'", Integer.class);
         assertEquals(1, count);
         Integer countRecords = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM test_entity", Integer.class);
+        assertNotNull(countRecords);
         assertTrue(countRecords >= 10);
     }
 
     @When("I DELETE entity on {string}")
     public void iDeleteEntityOn(String endpoint) {
-        ResponseEntity<Map> responseEntity = restTemplate.postForEntity(HTTP_LOCALHOST_8081 + endpoint, null, Map.class);
+        ResponseEntity<TestEntity> responseEntity = restTemplate.postForEntity(HTTP_LOCALHOST_8081 + endpoint, null, TestEntity.class);
         lastResponseCode = responseEntity.getStatusCode().value();
         if(responseEntity.getStatusCode().is2xxSuccessful()) {
             try {
-                savedEntity = objectMapper.convertValue(responseEntity.getBody(), TestEntity.class);
+                savedEntity = responseEntity.getBody();
             } catch (Exception e) {
                 log.warn("Failed to parse response as TestEntity: {}", e.getMessage());
             }
@@ -76,7 +80,7 @@ public class PersistableEntitySteps {
     }
 
     @When("I POST entity on {string}")
-    public void iPostEntityOn(String endpoint, DataTable dataTable) throws Exception {
+    public void iPostEntityOn(String endpoint, DataTable dataTable) {
         TestEntity entity = convertDataTableToTestEntity(dataTable);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -89,7 +93,7 @@ public class PersistableEntitySteps {
     }
 
     @When("I POST multiple entities on {string}")
-    public void iPostEntitiesOn(String endpoint, DataTable dataTable) throws Exception {
+    public void iPostEntitiesOn(String endpoint, DataTable dataTable) {
         List<TestEntity> entities = convertDataTableToTestEntities(dataTable);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -111,14 +115,9 @@ public class PersistableEntitySteps {
     }
 
     @When("I POST filter with entity name {string} page {int} size {int} on {string}")
-    public void iPostFilterWithEntityNamePageSizeOn(String entityName, int page, int size, String endpoint, DataTable dataTable) throws Exception {
+    public void iPostFilterWithEntityNamePageSizeOn(String entityName, int page, int size, String endpoint, DataTable dataTable) {
         List<FilterTuple> filterTuples = convertDataTableToFilterTuples(dataTable);
-        Filter filter = Filter.builder()
-                .entityName(entityName)
-                .page(page)
-                .size(size)
-                .filterTuples(filterTuples)
-                .build();
+        PaginationFilter filter = new PaginationFilter(entityName,page,size,filterTuples);
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -128,6 +127,32 @@ public class PersistableEntitySteps {
         if(responseEntity.getStatusCode().is2xxSuccessful()) {
             pagedResponse = responseEntity.getBody();
         }
+    }
+
+    @When("I POST filter with entity name {string} on {string}")
+    public void iPostFilterWithEntityNameOn(String entityName, String endpoint, DataTable dataTable) {
+        List<FilterTuple> filterTuples = convertDataTableToFilterTuples(dataTable);
+        Filter filter = new Filter(entityName, filterTuples);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Filter> request = new HttpEntity<>(filter, headers);
+        ResponseEntity<List<TestEntity>> responseEntity = restTemplate.exchange(HTTP_LOCALHOST_8081 + endpoint, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
+        lastResponseCode = responseEntity.getStatusCode().value();
+        if(responseEntity.getStatusCode().is2xxSuccessful()) {
+            listResponse = responseEntity.getBody();
+        }
+    }
+
+    @When("I POST multiple entities on {string} for error")
+    public void iPostEntitiesOnForError(String endpoint, DataTable dataTable) {
+        List<TestEntity> entities = convertDataTableToTestEntities(dataTable);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<List<TestEntity>> request = new HttpEntity<>(entities, headers);
+        ResponseEntity<ErrorResponse> responseEntity = restTemplate.exchange(HTTP_LOCALHOST_8081 + endpoint, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
+        lastResponseCode = responseEntity.getStatusCode().value();
+        assertNotNull(responseEntity.getBody());
+        lastExceptionMessage = responseEntity.getBody().getMessage();
     }
 
     @Then("the response status is {int}")
@@ -145,9 +170,7 @@ public class PersistableEntitySteps {
     public void theResponseContainsEntitiesWithGeneratedIds() {
         assertNotNull(savedEntities);
         assertFalse(savedEntities.isEmpty());
-        savedEntities.forEach(entity -> {
-            assertNotNull(entity.getId());
-        });
+        savedEntities.forEach(entity -> assertNotNull(entity.getId()));
     }
 
     @Then("the response entity has id {string}")
@@ -157,19 +180,24 @@ public class PersistableEntitySteps {
         assertEquals(expectedId, savedEntity.getId().toString());
     }
 
+    @Then("the response entity is null")
+    public void theResponseEntityIsNull() {
+        assertNull(savedEntity);
+    }
+
     @Then("the response contains entity with {word} as {string} and {word} as {string}")
-    public void theResponseContainsEntityWithFields(String field1, String value1, String field2, String value2) throws Exception {
+    public void theResponseContainsEntityWithFields(String field1, String value1, String field2, String value2) {
         assertNotNull(savedEntity);
-        Map<String, Object> entityMap = objectMapper.convertValue(savedEntity, Map.class);
+        Map<String, Object> entityMap = objectMapper.convertValue(savedEntity, new TypeReference<>() {});
         assertEquals(value1, String.valueOf(entityMap.get(field1)));
         assertEquals(value2, String.valueOf(entityMap.get(field2)));
     }
 
     @Then("the response contains entity at id {string} with {word} as {string} and {word} as {string}")
-    public void theResponseContainsEntityWithFields(String id, String field1, String value1, String field2, String value2) throws Exception {
+    public void theResponseContainsEntityWithFields(String id, String field1, String value1, String field2, String value2) {
         TestEntity entity = savedEntities.stream().filter(e -> e.getId().toString().equals(id)).findFirst().orElse(null);
         assertNotNull(entity);
-        Map<String, Object> entityMap = objectMapper.convertValue(entity, Map.class);
+        Map<String, Object> entityMap = objectMapper.convertValue(entity, new TypeReference<>() {});
         assertEquals(value1, String.valueOf(entityMap.get(field1)));
         assertEquals(value2, String.valueOf(entityMap.get(field2)));
     }
@@ -179,21 +207,33 @@ public class PersistableEntitySteps {
         assertNotNull(pagedResponse);
         assertEquals(page, pagedResponse.getTotalPages());
         assertEquals(size, pagedResponse.getContent().size());
-        assertEquals(currentPage, pagedResponse.getPage());
+        assertEquals(currentPage, pagedResponse.getPageNumber());
         assertEquals(totalElements, pagedResponse.getTotalElements());
     }
 
-    private TestEntity convertDataTableToTestEntity(DataTable dataTable) throws Exception {
+    @Then("the response contains total {int} elements")
+    public void theResponseContainsTotalElements(int totalElements) {
+        assertNotNull(listResponse);
+        assertEquals(totalElements, listResponse.size());
+    }
+
+    @Then("error message is {string}")
+    public void errorMessageIs(String expectedMessage) {
+        assertNotNull(lastExceptionMessage);
+        assertEquals(expectedMessage, lastExceptionMessage);
+    }
+
+    private TestEntity convertDataTableToTestEntity(DataTable dataTable) {
         Map<String, String> data = dataTable.asMaps(String.class, String.class).getFirst();
         return objectMapper.convertValue(data, TestEntity.class);
     }
 
-    private List<TestEntity> convertDataTableToTestEntities(DataTable dataTable) throws Exception {
+    private List<TestEntity> convertDataTableToTestEntities(DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         return data.stream().map(row -> objectMapper.convertValue(row, TestEntity.class)).toList();
     }
 
-    private List<FilterTuple> convertDataTableToFilterTuples(DataTable dataTable) throws Exception {
+    private List<FilterTuple> convertDataTableToFilterTuples(DataTable dataTable) {
         List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
         return data.stream().map(this::convertToFieldListOfObjectsMap).map(row -> objectMapper.convertValue(row, FilterTuple.class)).toList();
     }

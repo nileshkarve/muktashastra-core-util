@@ -23,10 +23,10 @@ public class PagedResponse<T> implements Serializable {
     private List<T> content;
     
     /** Current page number (0-based) */
-    private Integer page;
+    private Integer pageNumber;
     
     /** Number of items per page */
-    private Integer size;
+    private Integer pageSize;
     
     /** Total number of elements across all pages */
     private Long totalElements;
@@ -44,17 +44,17 @@ public class PagedResponse<T> implements Serializable {
      * Creates a paged response with pagination metadata.
      * 
      * @param content the list of items for current page
-     * @param page current page number (0-based)
-     * @param size number of items per page
+     * @param pageNumber current page number (0-based)
+     * @param pageSize number of items per page
      * @param totalElements total number of elements
      */
-    public PagedResponse(List<T> content, int page, int size, Long totalElements) {
+    public PagedResponse(List<T> content, int pageNumber, int pageSize, Long totalElements) {
         this.content = content;
-        this.page = page;
-        this.size = size;
+        this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
         this.totalElements = totalElements;
-        this.totalPages = (int) Math.ceil((double) totalElements / size);
-        this.first = page == 0;
-        this.last = page >= totalPages - 1;
+        this.totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        this.first = pageNumber == 0;
+        this.last = pageNumber >= totalPages - 1;
     }
 }

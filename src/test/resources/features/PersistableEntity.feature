@@ -13,6 +13,11 @@ Feature: PersistableEntity REST API Operations
     Then the response status is 200
     And the response contains entity with generated id
 
+  Scenario: Get entity by ID via REST API for non existing id
+    When I GET entity on "/testEntity/49fc5e08-8a05-4fbc-92bf-f5333453bab1"
+    Then the response status is 200
+    And the response entity is null
+
   Scenario: Get entity by ID via REST API
     When I GET entity on "/testEntity/49fc5e08-8a05-4fbc-92bf-f5333453bab0"
     Then the response status is 200
@@ -137,10 +142,10 @@ Feature: PersistableEntity REST API Operations
 
   Scenario: Select with IN operator in filter
     When I POST filter with entity name "TestEntity" page 0 size 10 on "/testEntity/search"
-      | fieldName | comparisonOperator | filterValues        |
-      | status    | IN                 | ACTIVE,NEW          |
+      | fieldName | comparisonOperator | filterValues                                                                       |
+      | id        | IN                 | 9c488e54-8449-45f8-bed2-979807755ad5,3d950bfc-0323-42dc-9a28-8ccad7486501          |
     Then the response status is 200
-    And the response contains 2 pages and 10 elements in page number 0 with total elements 11
+    And the response contains 1 pages and 2 elements in page number 0 with total elements 2
 
   Scenario: Select with NOT_IN operator in filter
     When I POST filter with entity name "TestEntity" page 0 size 10 on "/testEntity/search"
@@ -162,3 +167,15 @@ Feature: PersistableEntity REST API Operations
       | description | IS_NOT_NULL        |              |
     Then the response status is 200
     And the response contains 2 pages and 10 elements in page number 0 with total elements 15
+
+  Scenario: Get all with IS_NOT_NULL operator in filter
+    When I POST filter with entity name "TestEntity" on "/testEntity/getAll"
+      | fieldName   | comparisonOperator | filterValues |
+    Then the response status is 200
+    And the response contains total 15 elements
+
+  Scenario: Empty list passed for insertion
+    When I POST multiple entities on "/testEntity/insertAll" for error
+      | name   | description   | procureDate | createTimestamp      | price    | status | active | category    | rating |
+    Then the response status is 500
+    And error message is "Entity list cannot be empty"

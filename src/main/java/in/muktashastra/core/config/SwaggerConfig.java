@@ -1,5 +1,6 @@
 package in.muktashastra.core.config;
 
+import in.muktashastra.core.config.properties.SwaggerProperties;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -20,8 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(
         prefix = "swagger",
         name = "enabled",
-        havingValue = "true",
-        matchIfMissing = false
+        havingValue = "true"
 )
 public class SwaggerConfig {
 

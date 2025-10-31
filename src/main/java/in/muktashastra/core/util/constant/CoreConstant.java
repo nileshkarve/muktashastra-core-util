@@ -27,4 +27,8 @@ public class CoreConstant {
     /** ISO LocalDate format pattern */
     public static final String LOCAL_DATE_FORMAT = "yyyy-MM-dd";
 
+    public static final String FILE_NAME_EXTENSION_PROPERTIES = ".properties";
+
+    public static final String MULTI_LINGUAL_MESSAGE_FILES_FOLDER_NAME = "i18nMessages";
+
 }

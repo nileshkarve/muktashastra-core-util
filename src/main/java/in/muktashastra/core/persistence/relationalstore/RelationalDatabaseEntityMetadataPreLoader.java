@@ -1,7 +1,6 @@
 package in.muktashastra.core.persistence.relationalstore;
 
 import in.muktashastra.core.exception.CoreException;
-import in.muktashastra.core.exception.CoreRuntimeException;
 import in.muktashastra.core.persistence.model.PersistableEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,6 @@ public class RelationalDatabaseEntityMetadataPreLoader implements SmartInitializ
                     }
                 } catch (ClassNotFoundException | CoreException e) {
                     log.error("Error while loading RelationalDatabaseEntity with class name {} : ", beanDefinition.getBeanClassName(), e);
-                    throw new CoreRuntimeException(e);
                 }
             });
         }

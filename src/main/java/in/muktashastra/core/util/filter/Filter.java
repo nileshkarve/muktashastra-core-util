@@ -1,31 +1,25 @@
 package in.muktashastra.core.util.filter;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
 import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @ToString
-public final class Filter implements Serializable {
+public class Filter implements Serializable {
 
     /** Entity on which filter is to be applied */
-    private String entityName;
+    private final String entityName;
 
-    /** Page number for pagination (0-based) */
-    private Integer page;
+    private final List<FilterTuple> filterTuples;
 
-    /** Number of items per page */
-    private Integer size;
-
-    @Singular
-    private List<FilterTuple> filterTuples;
+    @JsonCreator
+    public Filter(@JsonProperty("entityName") String entityName, @JsonProperty("filterTuples") List<FilterTuple> filterTuples) {
+        this.entityName = entityName;
+        this.filterTuples = filterTuples;
+    }
 }

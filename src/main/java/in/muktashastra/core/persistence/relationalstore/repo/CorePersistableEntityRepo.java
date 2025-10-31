@@ -12,6 +12,7 @@ import in.muktashastra.core.persistence.util.JavaConversionType;
 import in.muktashastra.core.util.CoreUtil;
 import in.muktashastra.core.util.filter.Filter;
 import in.muktashastra.core.util.filter.FilterTuple;
+import in.muktashastra.core.util.filter.PaginationFilter;
 import in.muktashastra.core.util.model.PagedResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -59,29 +60,25 @@ public class CorePersistableEntityRepo<T extends PersistableEntity> implements P
     }
 
     @Override
-    public PagedResponse<T> getAllPaged(@NonNull Filter filter) throws CoreException {
+    public PagedResponse<T> getAllPaged(@NonNull PaginationFilter filter) throws CoreException {
         EntityMetadata metaData = RelationalDatabaseEntityMetadataCache.getEntityMetaData(filter.getEntityName());
         List<WhereConditionContainer> whereClauseContainers = buildWhereConditionContainers(filter, metaData);
         String whereClause = buildWhereClause(whereClauseContainers);
         List<Object> values = extractValuesOfPreparedStatementParameters(whereClauseContainers);
-
-        // Get total count
-        String countSql =  metaData.getSelectCountQueryMetadata().getQuery() + whereClause;
-        Long totalElements = applicationJdbcTemplate.queryForObject(countSql, Long.class, values.toArray());
 
         // Get paginated results
         String selectSql = metaData.getSelectQueryMetadata().getQuery();
         String paginatedSql = selectSql.concat(whereClause).concat(System.lineSeparator()).concat("LIMIT ? OFFSET ?");
         List<Object> paginatedParams = new ArrayList<>(values);
 
-        paginatedParams.add(filter.getSize());
-        paginatedParams.add(filter.getPage() * filter.getSize());
-        List<T> objects = applicationJdbcTemplate.query(paginatedSql, new EntityRowMapper<>(metaData), paginatedParams.toArray());
-        return new PagedResponse<>(objects, filter.getPage(), filter.getSize(), totalElements);
-    }
+        // Get total count
+        String countSql =  metaData.getSelectCountQueryMetadata().getQuery() + whereClause;
+        Long totalElements = applicationJdbcTemplate.queryForObject(countSql, Long.class, values.toArray());
 
-    private List<Object> extractValuesOfPreparedStatementParameters(List<WhereConditionContainer> whereClauseContainers) {
-        return whereClauseContainers.stream().flatMap(container -> container.getParameterValues().stream()).toList();
+        paginatedParams.add(filter.getPageSize());
+        paginatedParams.add(filter.getPageNumber() * filter.getPageSize());
+        List<T> objects = applicationJdbcTemplate.query(paginatedSql, new EntityRowMapper<>(metaData), paginatedParams.toArray());
+        return new PagedResponse<>(objects, filter.getPageNumber(), filter.getPageSize(), totalElements);
     }
 
     @Override
@@ -120,6 +117,10 @@ public class CorePersistableEntityRepo<T extends PersistableEntity> implements P
         QueryMetadata updateQueryMetadata = entityMetaData.getUpdateQueryMetadata();
         executeBatchUpdate(entities, entityMetaData, updateQueryMetadata);
         return entities;
+    }
+
+    private List<Object> extractValuesOfPreparedStatementParameters(List<WhereConditionContainer> whereClauseContainers) {
+        return whereClauseContainers.stream().flatMap(container -> container.getParameterValues().stream()).toList();
     }
 
     private String buildWhereClause(List<WhereConditionContainer> whereClauseContainers) {
@@ -179,7 +180,7 @@ public class CorePersistableEntityRepo<T extends PersistableEntity> implements P
         for(List<T> entityBatch : entityBatches) {
             applicationJdbcTemplate.batchUpdate(queryMetadata.getQuery(), new BatchPreparedStatementSetter() {
                 @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
                     T entity = entityBatch.get(i);
                     try {
                         for(int j = 1; j <= queryMetadata.getNumberOfParameters(); j++) {
@@ -218,7 +219,7 @@ public class CorePersistableEntityRepo<T extends PersistableEntity> implements P
 
     private EntityMetadata getEntityMetadata(List<T> entities) throws CoreException {
         if (entities.isEmpty()) {
-            throw new CoreException("Entity list to be saved cannot be empty");
+            throw new CoreException("Entity list cannot be empty");
         }
         return RelationalDatabaseEntityMetadataCache.getEntityMetaData(entities.getFirst().getEntityName());
     }

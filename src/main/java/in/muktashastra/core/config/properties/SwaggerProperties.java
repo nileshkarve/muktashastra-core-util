@@ -1,4 +1,4 @@
-package in.muktashastra.core.config;
+package in.muktashastra.core.config.properties;
 
 
 import lombok.Getter;

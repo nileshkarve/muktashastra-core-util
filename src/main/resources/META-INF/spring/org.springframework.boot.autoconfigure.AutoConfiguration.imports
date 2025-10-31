@@ -1,3 +1,4 @@
 in.muktashastra.core.config.CoreUtilConfig
 in.muktashastra.core.config.SwaggerConfig
 in.muktashastra.core.config.PersistenceFrameworkConfig
+in.muktashastra.core.config.CoreExceptionConfig

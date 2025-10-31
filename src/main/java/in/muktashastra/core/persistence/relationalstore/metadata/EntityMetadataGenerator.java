@@ -17,8 +17,8 @@ public final class EntityMetadataGenerator {
 
     public static EntityMetadata generate(@NonNull Class<?> entityClass) throws CoreException {
         List<FieldMetadata> fieldMetadata = extractFieldMetadata(entityClass.getDeclaredFields());
-        Map<String, FieldMetadata> columnMetadataMap = fieldMetadata.stream().collect(Collectors.toMap(FieldMetadata::columnName, field -> field, (a, b) -> a));
-        Map<String, FieldMetadata> fieldMetadataMap = fieldMetadata.stream().collect(Collectors.toMap(metadata->metadata.field().getName(), field -> field, (a, b) -> a));
+        Map<String, FieldMetadata> columnMetadataMap = fieldMetadata.stream().collect(Collectors.toMap(FieldMetadata::columnName, field -> field));
+        Map<String, FieldMetadata> fieldMetadataMap = fieldMetadata.stream().collect(Collectors.toMap(metadata->metadata.field().getName(), field -> field));
         return new EntityMetadata(entityClass, extractTableName(entityClass), columnMetadataMap, fieldMetadataMap);
     }
 
@@ -33,9 +33,9 @@ public final class EntityMetadataGenerator {
         return fieldMetadata;
     }
 
-    private static String extractTableName(Class<?> clazz) {
+    private static String extractTableName(Class<?> clazz) throws CoreException {
         if (!clazz.isAnnotationPresent(RelationalDatabaseEntity.class)) {
-            throw new IllegalArgumentException("Class not annotated with @RelationalDatabaseEntity: " + clazz.getName());
+            throw new CoreException("Persistable entity "+ clazz.getName() +" is not annotated with @RelationalDatabaseEntity");
         }
         RelationalDatabaseEntity entity = clazz.getAnnotation(RelationalDatabaseEntity.class);
         return entity.tableName();

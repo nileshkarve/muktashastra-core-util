@@ -1,7 +1,7 @@
 package in.muktashastra.core.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import in.muktashastra.core.config.PersistenceFrameworkProperties;
+import in.muktashastra.core.config.properties.PersistenceFrameworkProperties;
 import in.muktashastra.core.entity.TestEntity;
 import in.muktashastra.core.persistence.relationalstore.repo.CorePersistableEntityRepo;
 import in.muktashastra.core.util.CoreUtil;

@@ -44,7 +44,7 @@ public class TestEntity implements PersistableEntity {
     @JsonFormat(pattern = CoreConstant.LOCAL_DATE_FORMAT)
     @JsonSerialize(using = LocalDateSerializer.class)
     @JsonDeserialize(using = LocalDateDeserializer.class)
-    @DatabaseColumn(name = "procure_date", javaConversionType = JavaConversionType.LOCAL_DATE)
+    @DatabaseColumn(name = "procure_date", javaConversionType = JavaConversionType.LOCAL_DATE, indexSequenceNumber = 2)
     private LocalDate procureDate;
 
     @DateTimeFormat(pattern = CoreConstant.LOCAL_DATE_TIME_FORMAT)
@@ -68,4 +68,6 @@ public class TestEntity implements PersistableEntity {
 
     @DatabaseColumn(name = "rating", javaConversionType = JavaConversionType.INTEGER, nullable = false)
     private Integer rating;
+
+    private String databaseTransientField;
 }

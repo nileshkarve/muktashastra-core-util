@@ -4,7 +4,7 @@ import in.muktashastra.core.util.CoreUtil;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,12 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static in.muktashastra.core.util.constant.CoreConstant.LOCAL_DATE_FORMAT;
+import static in.muktashastra.core.util.constant.CoreConstant.LOCAL_DATE_TIME_FORMAT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@RequiredArgsConstructor
 public class CoreUtilSteps {
 
-    @Autowired
-    private CoreUtil coreUtil;
+    private final CoreUtil coreUtil;
 
     private LocalDateTime resultDateTime;
     private String resultDateTimeString;
@@ -30,7 +34,6 @@ public class CoreUtilSteps {
     private LocalDate parsedDate;
     private List<String> inputList;
     private List<List<String>> resultBatches;
-    private int batchSize;
 
     @When("I call getCurrentLocalDateTimes method")
     public void iCallGetCurrentLocalDateTimesMethod() {
@@ -40,7 +43,7 @@ public class CoreUtilSteps {
     @Then("the returned LocalDateTime should be in ISO format")
     public void theReturnedLocalDateTimeShouldBeInISOFormat() {
         assertNotNull(resultDateTime);
-        String formatted = resultDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        String formatted = resultDateTime.format(DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
         assertNotNull(formatted);
     }
 
@@ -59,13 +62,13 @@ public class CoreUtilSteps {
     @Then("the returned string should match ISO LocalDateTime format {string}")
     public void theReturnedStringShouldMatchISOLocalDateTimeFormat(String format) {
         assertNotNull(resultDateTimeString);
-        Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
+        Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
         assertTrue(pattern.matcher(resultDateTimeString).matches());
     }
 
     @Then("the string should represent current time")
     public void theStringShouldRepresentCurrentTime() {
-        LocalDateTime parsed = LocalDateTime.parse(resultDateTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        LocalDateTime parsed = LocalDateTime.parse(resultDateTimeString, DateTimeFormatter.ofPattern(LOCAL_DATE_TIME_FORMAT));
         LocalDateTime now = LocalDateTime.now();
         long secondsDiff = Math.abs(ChronoUnit.SECONDS.between(parsed, now));
         assertTrue(secondsDiff < 5, "Parsed time should be within 5 seconds of current time");
@@ -96,7 +99,7 @@ public class CoreUtilSteps {
     @Then("the returned LocalDate should be in ISO format")
     public void theReturnedLocalDateShouldBeInISOFormat() {
         assertNotNull(resultDate);
-        String formatted = resultDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formatted = resultDate.format(DateTimeFormatter.ofPattern(LOCAL_DATE_FORMAT));
         assertNotNull(formatted);
     }
 
@@ -120,7 +123,7 @@ public class CoreUtilSteps {
 
     @Then("the string should represent today's date")
     public void theStringShouldRepresentTodaysDate() {
-        LocalDate parsed = LocalDate.parse(resultDateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate parsed = LocalDate.parse(resultDateString, DateTimeFormatter.ofPattern(LOCAL_DATE_FORMAT));
         LocalDate today = LocalDate.now();
         assertEquals(today, parsed);
     }
@@ -137,7 +140,7 @@ public class CoreUtilSteps {
 
     @Then("the returned LocalDate should be {string}")
     public void theReturnedLocalDateShouldBe(String expectedDate) {
-        LocalDate expected = LocalDate.parse(expectedDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate expected = LocalDate.parse(expectedDate, DateTimeFormatter.ofPattern(LOCAL_DATE_FORMAT));
         assertEquals(expected, parsedDate);
     }
 
@@ -156,8 +159,7 @@ public class CoreUtilSteps {
 
     @When("I call createBatches with batch size {int}")
     public void iCallCreateBatchesWithBatchSize(int size) {
-        batchSize = size;
-        resultBatches = coreUtil.createBatches(inputList, batchSize);
+        resultBatches = coreUtil.createBatches(inputList, size);
     }
 
     @Then("I should get {int} batch(es)")
@@ -174,7 +176,7 @@ public class CoreUtilSteps {
 
     @Then("the last batch should have {int} element")
     public void theLastBatchShouldHaveElement(int elementCount) {
-        List<String> lastBatch = resultBatches.get(resultBatches.size() - 1);
+        List<String> lastBatch = resultBatches.getLast();
         assertEquals(elementCount, lastBatch.size());
     }
 
@@ -188,6 +190,6 @@ public class CoreUtilSteps {
     @Then("the batch should have {int} element")
     public void theBatchShouldHaveElement(int elementCount) {
         assertEquals(1, resultBatches.size());
-        assertEquals(elementCount, resultBatches.get(0).size());
+        assertEquals(elementCount, resultBatches.getFirst().size());
     }
 }
